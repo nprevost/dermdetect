@@ -3,3 +3,4 @@ pandas
 scikit-learn
 boto3
 python-dotenv
+tensorflow
