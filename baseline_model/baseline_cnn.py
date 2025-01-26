@@ -19,15 +19,18 @@ AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
 # Configuration de MLflow
-os.environ["APP_URI"] = "https://nprevost-dermdetect-mlflow.hf.space"  # Remplace par ton URI MLflow
+os.environ["APP_URI"] = os.getenv('APP_URI_MLFLOW')  # Remplace par ton URI MLflow
 EXPERIMENT_NAME = "feat_baseline_cnn"
 
 mlflow.set_tracking_uri(os.environ["APP_URI"])
 mlflow.set_experiment(EXPERIMENT_NAME)
 
+csv_path = os.getenv('CSV_PATH')
+image_dir = os.getenv('IMAGE_DIR')
+
 # Définition des chemins
-sample_csv_path = "/Users/maurice/Documents/certification/dermdetect/csv/sample_dataset.csv"
-sampled_image_dir = "/Users/maurice/Documents/data_nogit/Dermdetect/SAMPLE_20"
+sample_csv_path = csv_path + "/sample_dataset.csv"
+sampled_image_dir = image_dir + "/SAMPLE_20"
 
 # Chargement des données
 df_sample = pd.read_csv(sample_csv_path)
