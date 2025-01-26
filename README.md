@@ -19,6 +19,12 @@ Url du hugging face = https://huggingface.co/spaces/nprevost/dermdetect-streamli
 
 url = https://nprevost-dermdetect-streamlit.hf.space/
 
+Dans le dossier streamlit, lancer les commandes suivantes pour lancer le docker
+```
+docker build . -t dermdetect_streamlit
+docker run -it -v "$(pwd):/home/app" -e PORT=80 -p 4000:80 dermdetect_streamlit
+```
+
 ## Deep Learning
 
 Dans le fichier .env, rajouter les liens pour les dossiers des images et csv (Exemple):
