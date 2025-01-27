@@ -29,10 +29,9 @@ docker run -it -v "$(pwd):/home/app" -e PORT=80 -p 4000:80 dermdetect_streamlit
 
 Dans le fichier .env, rajouter les liens pour les dossiers des images et csv (Exemple):
 ```
-CSV_PATH=csv/dataset.csv
+CSV_PATH=csv
 IMAGE_DIR=images
-SAMPLED_IMAGE_DIR=SAMPLE_20
-SAMPLE_CSV_PATH=csv/sample_dataset.csv
+APP_URI_MLFLOW=https://nprevost-dermdetect-mlflow.hf.space
 ```
 
 Pour les récuperer dans le script python
