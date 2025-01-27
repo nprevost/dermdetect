@@ -4,3 +4,5 @@ scikit-learn
 boto3
 python-dotenv
 tensorflow
+plotly
+kaleido==0.1.0post1
