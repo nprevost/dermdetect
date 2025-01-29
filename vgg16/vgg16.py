@@ -3,13 +3,12 @@ import pandas as pd
 import mlflow
 import mlflow.tensorflow
 import tensorflow as tf
-from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications import VGG16
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, BatchNormalization, GlobalAveragePooling2D, Flatten, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model
-from tensorflow.keras.utils import plot_model
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
@@ -24,7 +23,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
 # Configuration de MLflow
 os.environ["APP_URI"] = os.getenv('APP_URI_MLFLOW')  # Remplace par ton URI MLflow
-EXPERIMENT_NAME = "resnet50"
+EXPERIMENT_NAME = "VGG16_nico"
 
 mlflow.set_tracking_uri(os.environ["APP_URI"])
 mlflow.set_experiment(EXPERIMENT_NAME)
@@ -51,7 +50,7 @@ train_generator = img_generator.flow_from_dataframe(
     directory=sampled_image_dir,
     x_col="image_id",
     y_col="target",
-    target_size=(128, 128),
+    target_size=(224, 224),
     batch_size=32,
     class_mode="binary",
     shuffle=True,
@@ -65,7 +64,7 @@ val_generator = img_generator.flow_from_dataframe(
     directory=sampled_image_dir,
     x_col="image_id",
     y_col="target",
-    target_size=(128, 128),
+    target_size=(224, 224),
     batch_size=32,
     class_mode="binary",
     shuffle=True,
@@ -76,10 +75,14 @@ val_generator = img_generator.flow_from_dataframe(
 # Enregistrement automatique avec MLflow
 mlflow.tensorflow.autolog()
 
-base_model  = ResNet50(
+# Dynamically calculate steps per epoch
+steps_per_epoch = len(train_generator)
+validation_steps = len(val_generator)
+
+base_model  = VGG16(
                         weights='imagenet',
                         include_top=False,
-                        input_shape=(128, 128, 3)
+                        input_shape=(224, 224, 3)
                         )
 
 base_model.trainable = False  # Freeze the base model
@@ -99,7 +102,7 @@ model.compile(optimizer=Adam(learning_rate=LR),
               metrics=['accuracy', tf.keras.metrics.AUC(name="auc")]
               )
 
-#plot_model(model, show_shapes=True)
+#model.summary()
 
 # Entraînement du modèle avec suivi MLflow
 with mlflow.start_run() as run:
@@ -107,13 +110,18 @@ with mlflow.start_run() as run:
     mlflow.log_param("learning_rate", LR)
     mlflow.log_param("batch_size", 32)
     mlflow.log_param("epochs", EPOCHS)
+    mlflow.log_param("model", "VGG16")
+    mlflow.log_param("dropout_rate", 0.5)
+    mlflow.log_param("train_val_split", 0.7)
 
     # Entraînement du modèle
     history = model.fit(
         train_generator,
         epochs=EPOCHS,
         validation_data=val_generator,
-        verbose=1
+        verbose=1,
+        steps_per_epoch=steps_per_epoch,
+        validation_steps=validation_steps
     )
 
     # Évaluation sur l'ensemble de validation
@@ -137,20 +145,19 @@ with mlflow.start_run() as run:
     plt.title("Courbe de Perte")
     plt.xlabel("Époques")
     plt.ylabel("Loss")
-    plt.savefig("model/resnet50_loss_plot.png")
-    mlflow.log_artifact("model/resnet50_loss_plot.png")
+    plt.savefig("VGG16_loss_plot.png")
+    mlflow.log_artifact("VGG16_loss_plot.png")
 
     # Tracé et enregistrement de la matrice de confusion
     cm = confusion_matrix(y_true, y_pred)
     df_cm = pd.DataFrame(cm, index=['Bénin', 'Malin'], columns=['Bénin', 'Malin'])
     fig = px.imshow(df_cm, text_auto=True, color_continuous_scale='Blues')
-    fig.write_image("model/resnet50_confusion_matrix.png", format="png", engine='kaleido')
-    mlflow.log_artifact("model/resnet50_confusion_matrix.png")
+    fig.write_image("VGG16_confusion_matrix.png", format="png", engine='kaleido')
+    mlflow.log_artifact("VGG16_confusion_matrix.png")
 
     # Enregistrement du modèle
-    model.save("model/resnet50_model.keras")
-    mlflow.log_artifact("model/resnet50_model.keras")
-
+    model.save("VGG16_model.h5")
+    mlflow.log_artifact("VGG16_model.h5")
 
     # Enregistrement du seuil optimal basé sur la courbe ROC
     optimal_idx = np.argmax(tpr - fpr)
