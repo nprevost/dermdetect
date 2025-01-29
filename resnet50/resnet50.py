@@ -147,8 +147,8 @@ with mlflow.start_run() as run:
     mlflow.log_artifact("confusion_matrix.png")
 
     # Enregistrement du modèle
-    model.save("resnet50_model.h5")
-    mlflow.log_artifact("resnet50_model.h5")
+    model.save("resnet50_model.keras")
+    mlflow.log_artifact("resnet50_model.keras")
 
     # Enregistrement du seuil optimal basé sur la courbe ROC
     optimal_idx = np.argmax(tpr - fpr)
