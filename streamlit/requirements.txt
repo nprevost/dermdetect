@@ -3,4 +3,4 @@ openpyxl
 pandas
 numpy
 plotly
-streamlit-option-menu
+tensorflow
