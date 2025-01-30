@@ -82,7 +82,7 @@ for layer in base_model.layers[-30:]:
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
 x = Dense(128, activation='relu')(x)
-output = Dense(1, activation='sigmoid')(x)
+output = Dense(1, activation='sigmoid')(x) #softmax avec 2 classes activation  = 'softmax'
 
 # Définition du modèle final
 model = Model(inputs=base_model.input, outputs=output)
