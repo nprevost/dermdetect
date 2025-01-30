@@ -19,8 +19,7 @@ def analyze_sex(df):
 
     fig = px.pie(df_sex,
                  values='count',
-                 names='sex',
-                 title='Répartition H / F')
+                 names='sex')
     
     st.plotly_chart(fig, theme=None)
 
@@ -38,18 +37,43 @@ def analyze_type(df):
 
     st.plotly_chart(fig, theme=None)
 
-def analyze_age(df):
-    df_age = df['age_approx'].value_counts()
-    df_age = df_age.reset_index()
+def analyze_anatomie(df):
+    df_benign_malignant_anatom = df.groupby('benign_malignant')['anatom_site_general'].value_counts()
+    df_benign_malignant_anatom = df_benign_malignant_anatom.reset_index()
+    df_benign_malignant_anatom.columns = ['benign_malignant', 'anatom_site_general', 'count']
 
-    # Renommer les colonnes
-    df_age.columns = ['age', 'count']
+    fig = px.bar(df_benign_malignant_anatom,
+                    y='count',
+                    x='benign_malignant',
+                    color='anatom_site_general',
+                    title='Repartition anatomie')
+    
+    st.plotly_chart(fig, theme=None)
 
-    fig = px.bar(df_age,
-                 y='count',
-                 x='age',
-                 title='Repartition Age')
+def analyze_age_cancer(df):
+    new_df = df.groupby('benign_malignant')['age_approx'].value_counts()
+    new_df = new_df.reset_index()
+    new_df.columns = ['benign_malignant', 'age', 'count']
 
+    fig = px.bar(new_df,
+                y='count',
+                x='age',
+                color='benign_malignant',
+                barmode='group')
+    
+    st.plotly_chart(fig, theme=None)
+
+def analyze_sex_cancer(df):
+    new_df = df.groupby('benign_malignant')['sex'].value_counts()
+    new_df = new_df.reset_index()
+    new_df.columns = ['benign_malignant', 'sex', 'count']
+
+    fig = px.bar(new_df,
+                y='count',
+                x='sex',
+                color='benign_malignant',
+                barmode='group')
+    
     st.plotly_chart(fig, theme=None)
 
 data = load_data()
@@ -58,14 +82,19 @@ if st.checkbox('Show raw data'):
     st.subheader('Raw data')
     st.dataframe(data)
 
+analyze_type(data)
+
 col1, col2 = st.columns(2)
 
 with col1:
-    st.header("Sexe")
+    st.header("Répartition H / F")
     analyze_sex(data)
 
 with col2:
-    st.header("Benin ou Maligne")
-    analyze_type(data)
+    st.header("Répartition du cancer H / F")
+    analyze_sex_cancer(data)
 
-analyze_age(data)
+st.header("Répartition du cancer par age")
+analyze_age_cancer(data)
+
+analyze_anatomie(data)
