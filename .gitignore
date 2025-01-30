@@ -7,7 +7,7 @@ csv/*
 streamlit/csv/
 streamlit/data/
 streamlit/model/
-model/*
+benchmark_models/artefacts/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

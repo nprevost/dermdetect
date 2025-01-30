@@ -2,14 +2,8 @@ FROM continuumio/miniconda3
 
 RUN apt-get update -y 
 
-#RUN useradd -m -u 1000 user
-
-# Switch to the "user" user
-#USER user
-
 WORKDIR /home/app
 
-#COPY --chown=user . /home/app
 COPY . /home/app
 
 RUN mkdir -p data

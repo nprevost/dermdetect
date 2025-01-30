@@ -7,9 +7,9 @@ st.set_page_config(
 
 st.header("Dermdetect - Détection de cancer de la peau")
 
-intro_page = st.Page('intro.py', title="Intro", icon=":material/home:")
-modele_page = st.Page('model_prediction/model.py', title="Prediction", icon=":material/batch_prediction:")
-dataset_page = st.Page("dataset/app.py", title="Dataset", icon=":material/dataset:")
+intro_page = st.Page('pages/intro.py', title="Intro", icon=":material/home:")
+modele_page = st.Page('pages/model.py', title="Prediction", icon=":material/batch_prediction:")
+dataset_page = st.Page("pages/dataset.py", title="Dataset", icon=":material/dataset:")
 
 pages = [intro_page, dataset_page, modele_page]
 

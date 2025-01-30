@@ -73,9 +73,6 @@ val_generator = img_generator.flow_from_dataframe(
     seed=42
 )
 
-# Enregistrement automatique avec MLflow
-mlflow.tensorflow.autolog()
-
 base_model  = ResNet50(
                         weights='imagenet',
                         include_top=False,
@@ -86,8 +83,8 @@ base_model.trainable = False  # Freeze the base model
 
 x = Flatten()(base_model.output)
 x = Dense(128, activation='relu')(x)
-x = Dropout(0.5)(x)
-output = Dense(1, activation='sigmoid')(x)
+#x = Dropout(0.5)(x)
+output = Dense(2, activation='softmax')(x)
 
 model = Model(inputs=base_model.input, outputs=output)
 
@@ -100,6 +97,9 @@ model.compile(optimizer=Adam(learning_rate=LR),
               )
 
 #plot_model(model, show_shapes=True)
+
+# Enregistrement automatique avec MLflow
+mlflow.tensorflow.autolog()
 
 # Entraînement du modèle avec suivi MLflow
 with mlflow.start_run() as run:
@@ -126,8 +126,8 @@ with mlflow.start_run() as run:
     roc_auc = auc(fpr, tpr)
     accuracy = history.history['val_accuracy'][-1]
 
-    mlflow.log_metric("Validation AUC", roc_auc)
-    mlflow.log_metric("Validation Accuracy", accuracy)
+    #mlflow.log_metric("Validation AUC", roc_auc)
+    #mlflow.log_metric("Validation Accuracy", accuracy)
 
     # Sauvegarde des courbes d'apprentissage
     plt.figure()
