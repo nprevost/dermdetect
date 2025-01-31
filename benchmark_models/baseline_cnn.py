@@ -124,19 +124,19 @@ with mlflow.start_run() as run:
     plt.title("Courbe de Perte")
     plt.xlabel("Époques")
     plt.ylabel("Loss")
-    plt.savefig("loss_plot.png")
-    mlflow.log_artifact("loss_plot.png")
+    plt.savefig("benchmark_models/artefacts/loss_plot.png")
+    mlflow.log_artifact("benchmark_models/artefacts/loss_plot.png")
 
     # Tracé et enregistrement de la matrice de confusion
     cm = confusion_matrix(y_true, y_pred)
     df_cm = pd.DataFrame(cm, index=['Bénin', 'Malin'], columns=['Bénin', 'Malin'])
     fig = px.imshow(df_cm, text_auto=True, color_continuous_scale='Blues')
-    fig.write_image("confusion_matrix.png")
-    mlflow.log_artifact("confusion_matrix.png")
+    fig.write_image("benchmark_models/artefacts/confusion_matrix.png")
+    mlflow.log_artifact("benchmark_models/artefacts/confusion_matrix.png")
 
     # Enregistrement du modèle
-    model.save("cnn_model.h5")
-    mlflow.log_artifact("cnn_model.h5")
+    model.save("benchmark_models/artefacts/cnn_model.keras")
+    mlflow.log_artifact("benchmark_models/artefacts/cnn_model.keras")
 
     # Enregistrement du seuil optimal basé sur la courbe ROC
     optimal_idx = np.argmax(tpr - fpr)

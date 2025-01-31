@@ -9,6 +9,8 @@ streamlit/data/
 streamlit/model/
 benchmark_models/artefacts/*
 
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

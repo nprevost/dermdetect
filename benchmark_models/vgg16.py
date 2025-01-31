@@ -145,19 +145,19 @@ with mlflow.start_run() as run:
     plt.title("Courbe de Perte")
     plt.xlabel("Époques")
     plt.ylabel("Loss")
-    plt.savefig("VGG16_loss_plot.png")
-    mlflow.log_artifact("VGG16_loss_plot.png")
+    plt.savefig("benchmark_models/artefacts/VGG16_loss_plot.png")
+    mlflow.log_artifact("benchmark_models/artefacts/VGG16_loss_plot.png")
 
     # Tracé et enregistrement de la matrice de confusion
     cm = confusion_matrix(y_true, y_pred)
     df_cm = pd.DataFrame(cm, index=['Bénin', 'Malin'], columns=['Bénin', 'Malin'])
     fig = px.imshow(df_cm, text_auto=True, color_continuous_scale='Blues')
-    fig.write_image("VGG16_confusion_matrix.png", format="png", engine='kaleido')
-    mlflow.log_artifact("VGG16_confusion_matrix.png")
+    fig.write_image("benchmark_models/artefacts/VGG16_confusion_matrix.png", format="png", engine='kaleido')
+    mlflow.log_artifact("benchmark_models/artefacts/VGG16_confusion_matrix.png")
 
     # Enregistrement du modèle
-    model.save("VGG16_model.h5")
-    mlflow.log_artifact("VGG16_model.h5")
+    model.save("benchmark_models/artefacts/VGG16_model.keras")
+    mlflow.log_artifact("benchmark_models/artefacts/VGG16_model.keras")
 
     # Enregistrement du seuil optimal basé sur la courbe ROC
     optimal_idx = np.argmax(tpr - fpr)
