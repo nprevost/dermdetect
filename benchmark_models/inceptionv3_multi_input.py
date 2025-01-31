@@ -4,7 +4,6 @@ import pandas as pd
 import tensorflow as tf
 import mlflow
 import mlflow.tensorflow
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout, Input, Concatenate
 from tensorflow.keras.models import Model
@@ -140,34 +139,41 @@ model.compile(optimizer=Adam(learning_rate=0.00001),
 
 
 with mlflow.start_run():
+    EPOCHS = 15
+
     # Log parameters
     mlflow.log_param("train_size", len(train_df))
     mlflow.log_param("val_size", len(val_df))
     mlflow.log_param("batch_size", 32)
-    mlflow.log_param("epochs", 1)
+    mlflow.log_param("epochs", EPOCHS)
     mlflow.log_param("fine_tune_layers", 30)
 
     # ✅ Train model (fine-tuning from the start with metadata)
     history = model.fit(
         train_generator,
         validation_data=val_generator,
-        epochs=1
+        epochs=EPOCHS
     )
 
     # ✅ Evaluate after training and log new metrics
     val_loss, val_acc, val_precision, val_recall, val_auc = model.evaluate(val_generator)
 
-    # Évaluation sur l'ensemble de validation
-    #y_true = val_generator.classes
-    #y_pred_prob = model.predict(val_generator).ravel()
-    #y_pred = (y_pred_prob > 0.5).astype("int32")
+    # ✅ Courbes d'entraînement
+    plt.figure()
+    plt.plot(history.history["accuracy"], label="Train Accuracy")
+    plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
+    plt.title("Accuracy over epochs")
+    plt.legend()
+    plt.savefig("benchmark_models/artefacts/accuracy_curve.png")
+    mlflow.log_artifact("benchmark_models/artefacts/accuracy_curve.png")
 
-    # Tracé et enregistrement de la matrice de confusion
-    #cm = confusion_matrix(y_true, y_pred)
-    #df_cm = pd.DataFrame(cm, index=['Bénin', 'Malin'], columns=['Bénin', 'Malin'])
-    #fig = px.imshow(df_cm, text_auto=True, color_continuous_scale='Blues')
-    #fig.write_image("benchmark_models/artefacts/resnet50_confusion_matrix.png", format="png", engine='kaleido')
-    #mlflow.log_artifact("benchmark_models/artefacts/resnet50_confusion_matrix.png")
+    plt.figure()
+    plt.plot(history.history["loss"], label="Train Loss")
+    plt.plot(history.history["val_loss"], label="Validation Loss")
+    plt.title("Loss over epochs")
+    plt.legend()
+    plt.savefig("benchmark_models/artefacts/loss_curve.png")
+    mlflow.log_artifact("benchmark_models/artefacts/loss_curve.png")
 
     print("Fine-tuning completed and logged to MLflow!")
 
