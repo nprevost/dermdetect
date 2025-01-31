@@ -93,7 +93,7 @@ csv_path = os.getenv('CSV_PATH')
 dermdetect/
 ├── .venv/                       # Environment python
 ├── benchmark_models/            # Model used to analyze performance
-│   ├── artefacts                # Models and matrix saved
+│   ├── artefacts/               # Models and matrix saved
 │   ├── baseline_cnn.py          # Model base CNN
 │   ├── resnet50.py              # Model resnet50
 │   ├── vgg16.py                 # Model VGG16
@@ -106,12 +106,13 @@ dermdetect/
 │   └── requirements.txt         # Dependencies for MLFlow
 ├── model/                       # Best model
 ├── scripts/                     # Scripts python
-│   ├── preprocessing.py         # Scripts to clean images and dataset
-│   ├── sample.py                # Scripts to create sample images
+│   ├── clean_metadata.py        # Scripts to create clean metadata
+│   ├── preprocessing.py         # Scripts to create dataset and move images
 │   └── script_test_mlflow.py    # Small script to test the connection to mlflow
 ├── streamlit/                   # Files for streamlit
 │   ├── .streamlit/
 │   │   └── config.toml          # Config streamlit
+│   ├── model/                   # Best model to predict in streamlit
 │   ├── pages/                   # Different pages of the streamlit
 │   |   ├── dataset.py           # Page to analyze the dataset
 │   │   ├── intro.py             # Streamlit Home Page
