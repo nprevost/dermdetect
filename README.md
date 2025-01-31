@@ -7,7 +7,7 @@ Dermdetect is a project to identify skin cancers from images. Using the Inceptio
 ## Stack used
 - **MLFlow**: Used for lifecycle management of machine learning models.
 - **Streamlit**: Used to build the web UI.
-- **scikit-learn**: Used to implement the inception_v3.
+- **Tensorflow**: Used to implement the inception_v3.
 - **pandas**: For data manipulation.
 - **plotly**: For creating interactive visualizations.
 - **S3**: To save artifacts 
@@ -32,7 +32,7 @@ python3.12 -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 ```
-Copier le fichier .env.tmp, renommer en .env et remplir les infos.
+Copy the .env.tmp file, rename to .env and fill in the info.
 
 ---
 
@@ -41,7 +41,7 @@ Copier le fichier .env.tmp, renommer en .env et remplir les infos.
 
 ### Preparation
 - First you need to create, put the zip and unzip it in an images folder of the project.
-- Then create a csv with the name of the images and the target. Group all the images in the same folder and retrieve the information with the ISIC API. To do this, launch **preprocessing.py** which is in the scripts folder.
+- Then create a csv with the name of the images and the target. Group all the images in the same folder and retrieve the information with the ISIC API. To do this, launch **preprocessing.py** and **clean_metadata.py** which is in the scripts folder.
 
 ---
 
@@ -62,7 +62,10 @@ Also create an S3 bucket
 
 [URL](https://nprevost-dermdetect-streamlit.hf.space/)
 
-Dans le dossier streamlit, lancer les commandes suivantes pour lancer le docker
+- In the streamlit folder, create a **model** folder and add the model.keras file to it
+- Add the merge_metadata.csv in the S3 and change the value of url_csv in the dataset.py file
+- In the streamlit folder, run the following commands to launch the docker
+
 ```
 docker build . -t dermdetect_streamlit
 docker run -it -v "$(pwd):/home/app" -e PORT=80 -p 4000:80 dermdetect_streamlit
@@ -72,12 +75,12 @@ docker run -it -v "$(pwd):/home/app" -e PORT=80 -p 4000:80 dermdetect_streamlit
 
 ## Deep Learning
 
-Dans le fichier .env, rajouter le lien pour MLFlow (Exemple):
+In the .env file, add the link for MLFlow (Example):
 ```
 APP_URI_MLFLOW=https://nprevost-dermdetect-mlflow.hf.space
 ```
 
-Pour les récuperer dans le script python
+To retrieve them in the python script
 ```
 load_dotenv(dotenv_path='.env')
             

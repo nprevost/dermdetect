@@ -12,51 +12,26 @@ load_dotenv(dotenv_path='.env')
 csv_path = os.getenv('CSV_PATH')
 image_dir = os.getenv('IMAGE_DIR')
 
-# Fonction pour créer le dataset BEN ou MAL
-def create_df(type = 'BEN', target = 'benign'):
-    # Chemin vers ton dossier contenant les images
-    dossier_images = image_dir + "/DA/"+type
-    fichier_csv = csv_path + "/"+type+".csv"
-
-    Path(csv_path).mkdir(parents=True, exist_ok=True)
-
-    # Récupérer les noms des fichiers image
-    extensions_images = ('.jpg')
-    noms_images = [f for f in os.listdir(dossier_images) if f.lower().endswith(extensions_images)]
-
-    # Créer un DataFrame
-    df = pd.DataFrame(noms_images, columns=['image_id'])
-    df['target'] = target
-
-    # Sauvegarder en CSV
-    df.to_csv(fichier_csv, index=False)
-
-    print(f"Le fichier {fichier_csv} a été créé avec succès !")
-
-# Fonction pour créer le dataset complet
-def create_df_final():
-    ben = csv_path + "/BEN.csv"
-    mal = csv_path + "/MAL.csv"
-    csv_final = csv_path + "/dataset.csv"
-
-    # Charger les fichiers CSV en DataFrame
-    df_ben = pd.read_csv(ben)
-    df_mal = pd.read_csv(mal)
-    df_final = pd.concat([df_ben, df_mal], ignore_index=True)
-
-    df_final.to_csv(csv_final, index=False)
-
-# Fonction pour copier les images
+# Fonction pour deplacer les images
 def copy_images(source):
     if os.path.exists(source+"/DA"):
+        noms_images = []
         for root, dirs, files in os.walk(source+"/DA"):
             for file in files:
                 if file.lower().endswith('.jpg'):
                     source_file = os.path.join(root, file)
                     destination_file = os.path.join(source, file)
-                    shutil.copy2(source_file, destination_file)
-                    os.remove(source_file)
+                    noms_images.append(file)
+
+                    # Récupérer les noms des fichiers image
+                    shutil.move(source_file, destination_file)
+                    
                     print(f"Copied: {source_file} to {destination_file}")
+
+        # Création du dataset avec image_id
+        df = pd.DataFrame(noms_images, columns=['image_id'])
+        fichier_csv = csv_path + "/dataset.csv"
+        df.to_csv(fichier_csv, index=False)
 
         shutil.rmtree(source+"/DA")
         print("All images copied successfully!")
@@ -68,7 +43,7 @@ def clean_dataset(metadata):
     initial_count = len(metadata)
 
     # Supprimer les doublons basés sur les colonnes image_id et target
-    metadata = metadata.drop_duplicates(subset=['image_id', 'target']).reset_index(drop=True)
+    metadata = metadata.drop_duplicates(subset=['image_id']).reset_index(drop=True)
 
     # Nombre de lignes après suppression des doublons
     final_count = len(metadata)
@@ -138,7 +113,7 @@ def create_df_metadata(json_data):
         "concomitant_biopsy",
         "sex",
         "anatom_site_general",
-        "benign_malignant",
+        "target",
         "diagnosis_1",
         "diagnosis_confirm_type",
         "age_approx",
@@ -157,16 +132,13 @@ def create_df_metadata(json_data):
 
 ###########################################
 if os.path.exists(image_dir+"/DA"):
-    create_df('BEN', 'benign')
-    create_df('MAL', 'malignant')
-    create_df_final()
-
     copy_images(image_dir)
 
 if os.path.isfile(csv_path+"/dataset.csv"):
     metadata = pd.read_csv(csv_path + '/dataset.csv')
     
     metadata = clean_dataset(metadata)
+
 
     # Liste des image_id dans le DataFrame `metadata`
     image_ids = metadata["image_id"].tolist()
@@ -213,3 +185,5 @@ if os.path.isfile(csv_path+"/dataset.csv"):
     print(f"Progress saved after {len(all_metadata)} entries.")
 
     create_df_metadata(all_metadata)
+
+    os.remove(csv_path + '/dataset.csv')

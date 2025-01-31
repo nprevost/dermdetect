@@ -136,25 +136,25 @@ with mlflow.start_run():
     plt.xlabel("Predicted")
     plt.ylabel("Actual")
     plt.title("Confusion Matrix")
-    plt.savefig("confusion_matrix.png")
+    plt.savefig("benchmark_models/artefacts/confusion_matrix.png")
     plt.close()
 
     # ✅ Log Confusion Matrix Image to MLflow
-    mlflow.log_artifact("confusion_matrix.png")
+    mlflow.log_artifact("benchmark_models/artefacts/confusion_matrix.png")
 
     # ✅ Save Classification Report
     class_report = classification_report(y_true, y_pred, target_names=["Benign", "Malignant"])
-    with open("classification_report.txt", "w") as f:
+    with open("benchmark_models/artefacts/classification_report.txt", "w") as f:
         f.write(class_report)
 
     # ✅ Log Classification Report to MLflow
-    mlflow.log_artifact("classification_report.txt")
+    mlflow.log_artifact("benchmark_models/artefacts/classification_report.txt")
 
     # ✅ Save the model in the new Keras format
-    model.save("inceptionv3_model.keras")  # Saves as .keras instead of .h5
+    model.save("benchmark_models/artefacts/inceptionv3_model.keras")  # Saves as .keras instead of .h5
 
     # ✅ Log the Keras model explicitly in MLflow
-    mlflow.tensorflow.log_model(tf.keras.models.load_model("inceptionv3_model.keras"), "inceptionv3_model")
+    mlflow.tensorflow.log_model(tf.keras.models.load_model("benchmark_models/artefacts/inceptionv3_model.keras"), "inceptionv3_model")
 
 
   

@@ -6,7 +6,8 @@ st.title("Dataset")
 
 @st.cache_data
 def load_data():
-    data = pd.read_csv('https://dermdetect.s3.eu-west-3.amazonaws.com/metadata.csv')
+    url_csv = 'https://dermdetect.s3.eu-west-3.amazonaws.com/merge_metadata.csv'
+    data = pd.read_csv(url_csv)
 
     return data
 

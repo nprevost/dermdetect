@@ -5,11 +5,10 @@ import mlflow.tensorflow
 import tensorflow as tf
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, BatchNormalization, GlobalAveragePooling2D, Flatten, Dropout
+from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model
-from tensorflow.keras.utils import plot_model
 from sklearn.metrics import confusion_matrix, roc_curve, auc
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
@@ -96,8 +95,6 @@ model.compile(optimizer=Adam(learning_rate=LR),
               metrics=['accuracy', tf.keras.metrics.AUC(name="auc")]
               )
 
-#plot_model(model, show_shapes=True)
-
 # Enregistrement automatique avec MLflow
 mlflow.tensorflow.autolog()
 
@@ -137,19 +134,19 @@ with mlflow.start_run() as run:
     plt.title("Courbe de Perte")
     plt.xlabel("Époques")
     plt.ylabel("Loss")
-    plt.savefig("model/resnet50_loss_plot.png")
-    mlflow.log_artifact("model/resnet50_loss_plot.png")
+    plt.savefig("benchmark_models/artefacts/resnet50_loss_plot.png")
+    mlflow.log_artifact("benchmark_models/artefacts/resnet50_loss_plot.png")
 
     # Tracé et enregistrement de la matrice de confusion
     cm = confusion_matrix(y_true, y_pred)
     df_cm = pd.DataFrame(cm, index=['Bénin', 'Malin'], columns=['Bénin', 'Malin'])
     fig = px.imshow(df_cm, text_auto=True, color_continuous_scale='Blues')
-    fig.write_image("model/resnet50_confusion_matrix.png", format="png", engine='kaleido')
-    mlflow.log_artifact("model/resnet50_confusion_matrix.png")
+    fig.write_image("benchmark_models/artefacts/resnet50_confusion_matrix.png", format="png", engine='kaleido')
+    mlflow.log_artifact("benchmark_models/artefacts/resnet50_confusion_matrix.png")
 
     # Enregistrement du modèle
-    model.save("model/resnet50_model.keras")
-    mlflow.log_artifact("model/resnet50_model.keras")
+    model.save("benchmark_models/artefacts/resnet50_model.keras")
+    mlflow.log_artifact("benchmark_models/artefacts/resnet50_model.keras")
 
 
     # Enregistrement du seuil optimal basé sur la courbe ROC
