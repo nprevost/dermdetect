@@ -4,6 +4,9 @@ import pandas as pd
 import tensorflow as tf
 import mlflow
 import mlflow.tensorflow
+import mlflow.keras
+from mlflow.models.signature import ModelSignature, Schema
+from mlflow.types.schema import TensorSpec
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications import InceptionV3
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout, Input, Concatenate
@@ -13,12 +16,12 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import Sequence
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
-from sklearn.metrics import auc, confusion_matrix
+from sklearn.metrics import auc, confusion_matrix, ConfusionMatrixDisplay
 import plotly.express as px
-
+import seaborn as sns
 
 # Load environment variables from .env file
-load_dotenv(dotenv_path= "../.env")  # Adjust the path to your .env file
+load_dotenv(dotenv_path="../.env")  # Adjust the path to your .env file
 
 # AWS Credentials
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -36,10 +39,11 @@ mlflow.set_experiment("SkinCancer_Exp1_InceptionV3_Metadata")
 mlflow.tensorflow.autolog(log_models=True)
 
 # Load merged dataset
-data_path = os.getenv("MERGED_CLEANED_DATASET") # Ensure using the cleaned dataset
+data_path = os.getenv("MERGED_CLEANED_DATASET")  # Ensure using the cleaned dataset
 df = pd.read_csv(data_path)
 
 # ✅ Convert `sex` to numerical values (Ensure correct mapping)
+
 df["sex"] = df["sex"].str.lower().map({"female": 1, "male": 0})
 
 # Normalize `age` column (scale between 0 and 1)
@@ -77,7 +81,7 @@ class MultiInputDataGenerator(Sequence):
         batch_data = self.dataframe.iloc[batch_indexes]
 
         # ✅ Convert images to proper TensorFlow format
-        images = np.stack([
+        images = np.stack([ 
             tf.keras.preprocessing.image.img_to_array(
                 tf.keras.preprocessing.image.load_img(
                     os.path.join(self.image_dir, img_id), target_size=self.target_size
@@ -98,18 +102,16 @@ class MultiInputDataGenerator(Sequence):
         if self.shuffle:
             np.random.shuffle(self.indexes)
 
-# 🔹 Convert Generator to TensorFlow Dataset
+# 🔹 Convert Generator to TensorFlow Dataset (if needed)
 def create_tf_dataset(generator):
     return tf.data.Dataset.from_generator(
         lambda: generator,
-        output_signature=(
+        output_signature=( 
             (tf.TensorSpec(shape=(None, 299, 299, 3), dtype=tf.float32),
              tf.TensorSpec(shape=(None, 2), dtype=tf.float32)),
             tf.TensorSpec(shape=(None,), dtype=tf.float32)
         )
     )
-
-
 
 # 🔹 Create data generators
 train_generator = MultiInputDataGenerator(train_df, IMAGE_DIR, shuffle=True)
@@ -142,11 +144,48 @@ output = Dense(1, activation="sigmoid")(x)  # Binary classification
 model = Model(inputs=[image_input, metadata_input], outputs=output)
 
 # ✅ Compile with additional evaluation metrics
-model.compile(optimizer=Adam(learning_rate=0.00001), 
-              loss="binary_crossentropy", 
-              metrics=["accuracy", tf.keras.metrics.Precision(), tf.keras.metrics.Recall(), tf.keras.metrics.AUC()])
+model.compile(
+    optimizer=Adam(learning_rate=0.00001), 
+    loss="binary_crossentropy", 
+    metrics=["accuracy", tf.keras.metrics.Precision(), tf.keras.metrics.Recall(), tf.keras.metrics.AUC()]
+)
 
+# Create an input example (a sample batch of inputs)
+# Here, we're creating a batch of images (shape: (batch_size, 299, 299, 3)) and metadata (shape: (batch_size, 2))
+sample_images = np.random.rand(1, 299, 299, 3).astype(np.float32)  # Random image
+sample_metadata = np.random.rand(1, 2).astype(np.float32)           # Random metadata (sex & age)
 
+# Define the TensorFlow input signature (used only as an example, not for MLflow signature)
+input_signature = [
+    (
+        tf.TensorSpec(shape=(None, 299, 299, 3), dtype=tf.float32),  # Image input shape
+        tf.TensorSpec(shape=(None, 2), dtype=tf.float32)              # Metadata input shape
+    )
+]
+
+# For MLflow model signature, define named TensorSpecs with -1 as the dynamic batch dimension.
+image_input_spec = TensorSpec(
+    shape=(-1, 299, 299, 3), 
+    type=np.dtype(np.float32),
+    name="image_input"
+)
+metadata_input_spec = TensorSpec(
+    shape=(-1, 2), 
+    type=np.dtype(np.float32),
+    name="metadata_input"
+)
+output_spec = TensorSpec(
+    shape=(-1,), 
+    type=np.dtype(np.float32),
+    name="predictions"
+)
+
+# Create input and output schemas for the model signature
+input_schema = Schema([image_input_spec, metadata_input_spec])
+output_schema = Schema([output_spec])
+
+# Create the model signature for MLflow
+model_signature = ModelSignature(inputs=input_schema, outputs=output_schema)
 
 with mlflow.start_run():
     # Log parameters
@@ -165,7 +204,7 @@ with mlflow.start_run():
 
     # ✅ Evaluate after training and log new metrics
     val_loss, val_acc, val_precision, val_recall, val_auc = model.evaluate(val_generator)
-    
+
     # Log evaluation metrics to MLflow
     mlflow.log_metric("val_loss", val_loss)
     mlflow.log_metric("val_accuracy", val_acc)
@@ -175,17 +214,58 @@ with mlflow.start_run():
 
     print("Fine-tuning completed and logged to MLflow!")
 
-    # 🔹 Log the trained model to MLflow
-    mlflow.keras.log_model(model, "keras_model")
+    # 🔹 Log the trained model to MLflow with signature and input example
+    mlflow.keras.log_model(
+        model,
+        "keras_model",
+        input_example={"image_input": sample_images, "metadata_input": sample_metadata},
+        signature=model_signature
+    )
 
 
+    # 🔹 Get predictions on validation data
+    y_true = []  # To store true labels
+    y_pred = []  # To store predicted labels
+
+    # Iterate through validation generator to collect all true labels and predictions
+    for (images, metadata), labels in val_generator:
+        # Predict batch of images
+        batch_preds = model.predict([images, metadata])
+
+        # Append true labels (flattening the list of batches)
+        y_true.extend(labels.numpy())
+
+        # Append predictions (flattening the list of batches)
+        y_pred.extend(batch_preds.flatten())
+
+    # Convert to numpy arrays
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    # 🔹 Ensure predictions are in the correct format (e.g., binary classification)
+    y_pred = (y_pred > 0.5).astype(int)  # Convert probabilities to binary labels
+
+    # 🔹 Generate confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+
+    # 🔹 Plot confusion matrix using Seaborn (you can change this to any visualization library you prefer)
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["Benign", "Malignant"], yticklabels=["Benign", "Malignant"])
+    plt.title("Confusion Matrix")
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+
+    # Save confusion matrix plot
+    cm_image_path = "confusion_matrix.png"
+    plt.savefig(cm_image_path)
+
+    # Log the confusion matrix as an artifact to MLflow
+    mlflow.log_artifact(cm_image_path)
+
+    print("Confusion matrix logged to MLflow!")
 
 # 🔹 Save the model locally as `.keras`
 os.makedirs("../models", exist_ok=True)  # ✅ Ensure directory exists
 model.save("../models/inceptionv3_skin_cancer_finetuned.keras")  # ✅ Save in Keras format
 
-
 print("I'm done!")
-
-
-# - accuracy: 0.8368 - auc: 0.9230 - loss: 0.3643 - precision: 0.8282 - recall: 0.8301
