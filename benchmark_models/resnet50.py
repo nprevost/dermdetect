@@ -4,7 +4,6 @@ import mlflow
 import mlflow.tensorflow
 import tensorflow as tf
 from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
