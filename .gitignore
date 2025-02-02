@@ -1,9 +1,15 @@
 # VS code
 dermdetect.code-workspace
 
-# Image
+# Data
 images/*
 csv/*
+streamlit/csv/
+streamlit/data/
+streamlit/model/
+benchmark_models/artefacts/*
+
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

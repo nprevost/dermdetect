@@ -23,7 +23,7 @@ X_train.head()
 os.environ["APP_URI"] = "https://nprevost-dermdetect-mlflow.hf.space" # For demo purpose, teachers can use "https://antoinekrajnc-mlflow-server-demo.hf.space"
 
 # Set your variables for your environment
-EXPERIMENT_NAME="Default3"
+EXPERIMENT_NAME="test-mlflow"
 
 # Set tracking URI to your Hugging Face application
 mlflow.set_tracking_uri(os.environ["APP_URI"])
