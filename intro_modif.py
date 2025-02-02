@@ -12,7 +12,7 @@ Welcome to the **Skin Cancer Detection App**, where AI helps detect potential sk
 3️⃣ You receive a **prediction** indicating if the lesion is **benign or malignant**.  
 
 ### 🛠 Features:
-- **Fast analysis with accuracy around 80%**
+- **Fast analysis with accuracy around 90%**
 - **Uses deep learning model**
 - **Simple and user-friendly interface**
 
