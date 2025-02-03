@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Dense, Flatten, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Model
-from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_score, recall_score, f1_score
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 import numpy as np
@@ -135,6 +135,19 @@ with mlflow.start_run() as run:
 
     mlflow.log_metric("Validation AUC", roc_auc)
     mlflow.log_metric("Validation Accuracy", accuracy)
+
+    # 🔹 Ajout des métriques demandées
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred)
+
+    mlflow.log_metric("Validation Precision", precision)
+    mlflow.log_metric("Validation Recall", recall)
+    mlflow.log_metric("Validation F1-score", f1)
+
+    print(f"Validation Precision: {precision:.4f}")
+    print(f"Validation Recall: {recall:.4f}")
+    print(f"Validation F1-score: {f1:.4f}")
 
     # Sauvegarde des courbes d'apprentissage
     plt.figure()
