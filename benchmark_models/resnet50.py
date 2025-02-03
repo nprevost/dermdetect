@@ -22,7 +22,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
 # Configuration de MLflow
 os.environ["APP_URI"] = os.getenv('APP_URI_MLFLOW')  # Remplace par ton URI MLflow
-EXPERIMENT_NAME = "resnet50"
+EXPERIMENT_NAME = "feat_resnet50_sample"
 
 mlflow.set_tracking_uri(os.environ["APP_URI"])
 mlflow.set_experiment(EXPERIMENT_NAME)
@@ -66,7 +66,7 @@ val_generator = img_generator.flow_from_dataframe(
     target_size=(128, 128),
     batch_size=32,
     class_mode="binary",
-    shuffle=True,
+    shuffle=False,
     subset="validation",
     seed=42
 )
@@ -82,12 +82,12 @@ base_model.trainable = False  # Freeze the base model
 x = Flatten()(base_model.output)
 x = Dense(128, activation='relu')(x)
 #x = Dropout(0.5)(x)
-output = Dense(2, activation='softmax')(x)
+output = Dense(1, activation='sigmoid')(x)
 
 model = Model(inputs=base_model.input, outputs=output)
 
 LR = 0.001
-EPOCHS = 20
+EPOCHS = 3
 
 model.compile(optimizer=Adam(learning_rate=LR), 
               loss='binary_crossentropy', 

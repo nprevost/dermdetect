@@ -13,14 +13,14 @@ import numpy as np
 import plotly.express as px
 
 # Charger les variables d'environnement
-load_dotenv(dotenv_path='/Users/maurice/Documents/certification/dermdetect/baseline_model/.env')
+load_dotenv(dotenv_path='../.env')
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
 # Configuration de MLflow
 os.environ["APP_URI"] = os.getenv('APP_URI_MLFLOW')  # Remplace par ton URI MLflow
-EXPERIMENT_NAME = "feat_baseline_cnn"
+EXPERIMENT_NAME = "feat_baseline_cnn_sample"
 
 mlflow.set_tracking_uri(os.environ["APP_URI"])
 mlflow.set_experiment(EXPERIMENT_NAME)
@@ -64,7 +64,7 @@ val_generator = img_generator.flow_from_dataframe(
     target_size=(128, 128),
     batch_size=32,
     class_mode="binary",
-    shuffle=True,
+    shuffle=False,
     subset="validation",
     seed=42
 )
@@ -93,12 +93,12 @@ with mlflow.start_run() as run:
     # Enregistrement des paramètres
     mlflow.log_param("learning_rate", 0.001)
     mlflow.log_param("batch_size", 32)
-    mlflow.log_param("epochs", 13)
+    mlflow.log_param("epochs",3)
 
     # Entraînement du modèle
     history = model.fit(
         train_generator,
-        epochs=13,
+        epochs=3,
         validation_data=val_generator,
         verbose=1
     )
