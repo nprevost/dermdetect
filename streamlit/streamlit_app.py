@@ -5,7 +5,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.header("Dermdetect - Détection de cancer de la peau")
+st.header("Dermdetect - Skin cancer detection")
 
 intro_page = st.Page('pages/intro.py', title="Intro", icon=":material/home:")
 modele_page = st.Page('pages/model.py', title="Prediction", icon=":material/batch_prediction:")

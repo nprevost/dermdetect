@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_v3 import preprocess_input
-from tensorflow.keras.utils import Sequence
+from tensorflow.keras import config
 from pathlib import Path
 
 def get_uploaded_image():
@@ -27,13 +27,13 @@ def predict(user_image, sex, age):
 
     sex_numeric = 1 if sex.lower() == "female" else 0
 
-    st.write(round(age / 5) * 5)
-
     age_max = 85
     age_normalized = (round(age / 5) * 5) / age_max
 
     # Metadonnées formatées pour TensorFlow
     metadata = np.array([[sex_numeric, age_normalized]], dtype=np.float32)
+
+    config.enable_unsafe_deserialization()
 
     model = tf.keras.models.load_model("./model/model.keras")
     result = model.predict({"image_input": img_array, "metadata_input": metadata})
@@ -66,7 +66,10 @@ if st.button("Validate", type="primary"):
 
         with col2:
             result = predict(user_image, option_sex, input_age)
-            st.header("Resnet50")
-            st.write(f"Prediction: {result}")
+            st.header("Model")
+
+            predict = result[0][0] * 100
+
+            st.write(f"Prediction: {predict:.2f}% of having cancer")
     else:
         st.warning("Please upload an image and complete the form before proceeding.")
