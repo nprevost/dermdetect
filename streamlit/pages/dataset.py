@@ -103,7 +103,10 @@ data = load_data()
 
 if st.checkbox('Show raw data'):
     st.subheader('Raw data')
-    st.dataframe(data)
+
+    data2 = data[['isic_id', 'sex', 'anatom_site_general', 'benign_malignant', 'age_approx']]
+
+    st.dataframe(data2)
 
 analyze_type(data)
 
