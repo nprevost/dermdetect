@@ -5,7 +5,7 @@ import tensorflow as tf
 import mlflow
 import mlflow.tensorflow
 from tensorflow.keras.applications import InceptionV3
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout, Input, Concatenate
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Input, Concatenate
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
@@ -16,7 +16,7 @@ from sklearn.metrics import confusion_matrix
 import plotly.express as px
 
 # ✅ Charger les variables d'environnement
-load_dotenv(dotenv_path='/Users/maurice/Documents/certification/dermdetect_brouillon/baseline_model/.env')
+load_dotenv(dotenv_path='../.env')
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
@@ -27,11 +27,15 @@ mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 mlflow.set_experiment("InceptionV3_Metadata_sample")
 
 # ✅ Charger le dataset
-data_path = '/Users/maurice/Documents/certification/dermdetect_brouillon/csv/merge_metadata_clean_integer.csv'
+csv_path = os.getenv('CSV_PATH')
+data_path = csv_path + "/merge_metadata_clean.csv"
 df = pd.read_csv(data_path)
 
 # ✅ Convertir `sex` en valeurs numériques
 df["sex"] = df["sex"].str.lower().map({"female": 1, "male": 0})
+
+# ✅ Convertir `target` en valeurs numériques
+df["target"] = df["target"].str.lower().map({"benign": 0, "malignant": 1})
 
 # ✅ Normaliser `age_approx`
 df["age_approx"] = df["age_approx"] / df["age_approx"].max()
@@ -44,7 +48,7 @@ df_sampled = df.sample(frac=0.2, random_state=42).reset_index(drop=True)
 train_df, val_df = train_test_split(df_sampled, test_size=0.3, random_state=42, stratify=df_sampled["target"])
 
 # ✅ Chemin des images
-IMAGE_DIR = '/Users/maurice/Documents/data_nogit/Dermdetect/ALL'
+IMAGE_DIR = os.getenv('IMAGE_DIR')
 
 # 🔹 Custom Data Generator
 class MultiInputDataGenerator(Sequence):
@@ -171,14 +175,14 @@ with mlflow.start_run():
     # ✅ Sauvegarder la matrice de confusion
     plt.figure(figsize=(6, 5))
     fig = px.imshow(df_cm, text_auto=True, color_continuous_scale="Blues")
-    fig.write_image("confusion_matrix.png")
+    fig.write_image("benchmark_models/artefacts/confusion_matrix.png")
 
     # ✅ Log de la matrice de confusion dans MLflow
-    mlflow.log_artifact("confusion_matrix.png")
+    mlflow.log_artifact("benchmark_models/artefacts/confusion_matrix.png")
 
     # ✅ Sauvegarde du modèle en format `.keras`
     os.makedirs("models", exist_ok=True)
-    model.save("models/inceptionv3_skin_cancer_finetuned.keras")
-    mlflow.log_artifact("models/inceptionv3_skin_cancer_finetuned.keras")
+    model.save("benchmark_models/artefacts/inceptionv3_skin_cancer_finetuned.keras")
+    mlflow.log_artifact("benchmark_models/artefacts/inceptionv3_skin_cancer_finetuned.keras")
 
     print("Fine-tuning completed and logged to MLflow!")

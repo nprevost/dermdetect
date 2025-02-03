@@ -16,7 +16,7 @@ import numpy as np
 import plotly.express as px
 
 # Charger les variables d'environnement
-load_dotenv(dotenv_path='/Users/maurice/Documents/certification/dermdetect_brouillon/baseline_model/.env')
+load_dotenv(dotenv_path='../.env')
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
