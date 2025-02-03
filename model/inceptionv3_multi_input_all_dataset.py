@@ -24,7 +24,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 # ✅ Configuration de MLflow
 MLFLOW_TRACKING_URI = os.getenv("APP_URI_MLFLOW")
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-mlflow.set_experiment("InceptionV3_Metadata_all_dataset")
+mlflow.set_experiment("InceptionV3_Metadata_sample")
 
 # ✅ Charger le dataset
 data_path = '/Users/maurice/Documents/certification/dermdetect_brouillon/csv/merge_metadata_clean_integer.csv'
@@ -38,10 +38,10 @@ df["age_approx"] = df["age_approx"] / df["age_approx"].max()
 df["target"] = df["target"].astype(int)
 
 # ✅ Prendre un échantillon de 20% du dataset
-#df_sampled = df.sample(frac=0.2, random_state=42).reset_index(drop=True)
+df_sampled = df.sample(frac=0.2, random_state=42).reset_index(drop=True)
 
 # ✅ Split en train (70%) et validation (30%)
-train_df, val_df = train_test_split(df, test_size=0.3, random_state=42, stratify=df["target"])
+train_df, val_df = train_test_split(df_sampled, test_size=0.3, random_state=42, stratify=df_sampled["target"])
 
 # ✅ Chemin des images
 IMAGE_DIR = '/Users/maurice/Documents/data_nogit/Dermdetect/ALL'
@@ -137,9 +137,9 @@ with mlflow.start_run():
     mlflow.log_param("train_size", len(train_df))
     mlflow.log_param("val_size", len(val_df))
     mlflow.log_param("batch_size", 32)
-    mlflow.log_param("epochs", 10)
+    mlflow.log_param("epochs", 3)
 
-    history = model.fit(train_generator, validation_data=val_generator, epochs=10)
+    history = model.fit(train_generator, validation_data=val_generator, epochs=3)
 
     val_loss, val_acc, val_precision, val_recall, val_auc = model.evaluate(val_generator)
 
