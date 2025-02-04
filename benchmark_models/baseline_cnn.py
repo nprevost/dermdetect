@@ -8,7 +8,7 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Input
 from tensorflow.keras.optimizers import Adam
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_score, recall_score, f1_score
 import numpy as np
 import plotly.express as px
 
@@ -93,7 +93,7 @@ with mlflow.start_run() as run:
     # Enregistrement des paramètres
     mlflow.log_param("learning_rate", 0.001)
     mlflow.log_param("batch_size", 32)
-    mlflow.log_param("epochs",3)
+    mlflow.log_param("epochs", 3)
 
     # Entraînement du modèle
     history = model.fit(
@@ -112,9 +112,16 @@ with mlflow.start_run() as run:
     fpr, tpr, thresholds = roc_curve(y_true, y_pred_prob)
     roc_auc = auc(fpr, tpr)
     accuracy = history.history['val_accuracy'][-1]
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred)
 
+    # Enregistrement des métriques dans MLflow
     mlflow.log_metric("Validation AUC", roc_auc)
     mlflow.log_metric("Validation Accuracy", accuracy)
+    mlflow.log_metric("Validation Precision", precision)
+    mlflow.log_metric("Validation Recall", recall)
+    mlflow.log_metric("Validation F1-score", f1)
 
     # Sauvegarde des courbes d'apprentissage
     plt.figure()
@@ -144,5 +151,8 @@ with mlflow.start_run() as run:
     mlflow.log_param("Optimal Threshold", optimal_threshold)
 
     print(f"Seuil optimal basé sur le point de coude : {optimal_threshold:.4f}")
+    print(f"Précision : {precision:.4f}")
+    print(f"Recall : {recall:.4f}")
+    print(f"F1-score : {f1:.4f}")
 
 print("Enregistrement des métriques et du modèle terminé.")
